@@ -1,0 +1,206 @@
+/*
+ * Copyright (c) 2019, The Linux Foundation. All rights reserved.
+ *
+ * This program is free software; you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License version 2 and
+ * only version 2 as published by the Free Software Foundation.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ */
+
+#include "trinket-audio-overlay-PD1965.dtsi"
+#include "trinket-camera-sensor-qrd-PD1965.dtsi"
+
+&soc {
+	fp_id:fp_id{
+		compatible = "fp-id";
+		status = "ok";
+		vivo,project-name = "PD1965";
+		fp_id,gpios = <&tlmm 8 0>;
+		pinctrl-names = "fp_id_gpio_up","fp_id_gpio_down";
+		pinctrl-0 = <&fp_id_gpio_up>;
+		pinctrl-1 = <&fp_id_gpio_down>;
+	};
+	goodix_fp {
+		status = "ok";
+		compatible = "goodix,fingerprint";
+
+		goodix,gpio_reset = <&tlmm 93 0x00>;
+		goodix,gpio_irq = <&tlmm 92 0x00>;
+		//vdd config
+		goodix,vdd_use_gpio;
+		goodix,gpio_vdd_en= <&tlmm 49 0x00>;
+		//goodix,vdd_use_pmic;
+		//vdd-supply = <&pm8150_l14>;
+	};
+    fpc_fp {
+		compatible = "fpc,fingerprint";
+		fpc,project-name = "PD1965";
+		status = "ok";
+		fpc,gpio_reset = <&tlmm 93 0x00>;
+		fpc,gpio_irq = <&tlmm 92 0x00>;
+		fpc,gpio_vdd_en= <&tlmm 49 0x00>;
+		pinctrl-names = "fpc1020_reset_reset",
+						"fpc1020_reset_active",
+						"fpc1020_irq_active",
+						"fpc1020_vdd_low",
+						"fpc1020_vdd_high";
+		pinctrl-0 = <&msm_gpio_reset>;
+		pinctrl-1 = <&msm_gpio_reset_output_high>;
+		pinctrl-2 = <&msm_gpio_irq>;
+		pinctrl-3 = <&msm_gpio_vdd>;
+		pinctrl-4 = <&msm_gpio_vdd_output_high>;
+		fpc,enable-on-boot;
+	};
+
+	/*added for sim detect*/
+	tcard_sim_slot:tcard_sim {
+		status = "ok";
+		compatible = "card-detect";
+		factory-test,sim1-card;
+		factory-test,sim2-card;
+		card-detect-sim1,gpios = <&tlmm 79 0x00>;
+		card-detect-sim2,gpios = <&tlmm 75 0x00>;
+		vivo,sim1-reverse-detect;
+		vivo,sim2-reverse-detect;
+		pinctrl-names = "default";
+		pinctrl-0 = <&card_detect>;
+	};
+	/*added for sim detect end*/
+	/*vivo sensor team added for sar power begin*/
+	sar_power: sar_power_device {
+		compatible = "sar-power";
+		interrupt-parent = <&tlmm>;
+		interrupts = <126 0x2>;
+		sar-power-rf-detect,gpios = <&tlmm 126 0>;
+		pinctrl-names = "default";
+		pinctrl-0 = <&sar_power_no_pull>;
+	};
+	/*vivo sensor team added for sar power end*/
+};
+
+/*vivo sensor team added start*/
+&sar_power_no_pull{
+	mux{
+		pins = "gpio126";
+		function = "gpio";
+	};
+
+	config{
+		pins = "gpio126";
+		drive-strength = <2>;
+		bias-disable;
+	};
+};
+/*vivo sensor team added end*/
+
+&dsi_panel_pwr_supply {
+	qcom,panel-supply-entry@0 {
+		qcom,supply-min-voltage = <1800000>;
+		qcom,supply-max-voltage = <1800000>;
+		qcom,supply-post-on-sleep = <0>;
+	};
+	qcom,panel-supply-entry@1 {
+		qcom,supply-min-voltage = <5500000>;
+		qcom,supply-max-voltage = <5500000>;
+		qcom,supply-post-on-sleep = <5>;
+	};
+
+	qcom,panel-supply-entry@2 {
+		qcom,supply-min-voltage = <5500000>;
+		qcom,supply-max-voltage = <5500000>;
+		qcom,supply-post-on-sleep = <0>;
+	};
+};
+
+&dsi_td4330_truly_cmd {
+	qcom,panel-supply-entries = <&dsi_panel_pwr_supply>;
+	pwms = <&pm6125_pwm 0 0>;
+	qcom,mdss-dsi-bl-pmic-control-type = "bl_ctrl_pwm";
+	qcom,bl-pmic-pwm-period-usecs = <100>;
+	qcom,mdss-dsi-bl-min-level = <1>;
+	qcom,mdss-dsi-bl-max-level = <4095>;
+	qcom,platform-te-gpio = <&tlmm 89 0>;
+	qcom,platform-reset-gpio = <&tlmm 90 0>;
+};
+
+&dsi_td4330_truly_video {
+	qcom,panel-supply-entries = <&dsi_panel_pwr_supply>;
+	pwms = <&pm6125_pwm 0 0>;
+	qcom,mdss-dsi-bl-pmic-control-type = "bl_ctrl_pwm";
+	qcom,bl-pmic-pwm-period-usecs = <100>;
+	qcom,mdss-dsi-bl-min-level = <1>;
+	qcom,mdss-dsi-bl-max-level = <4095>;
+	qcom,platform-reset-gpio = <&tlmm 90 0>;
+};
+
+&dsi_pd1965_tm_nt36672a_fhdplus_video {
+	qcom,panel-supply-entries = <&dsi_panel_pwr_supply>;
+	qcom,platform-reset-gpio = <&tlmm 90 0>;
+	qcom,platform-tp-reset-gpio = <&tlmm 119 0>;
+	qcom,mdss-dsi-bl-min-level = <1>;
+	qcom,mdss-dsi-bl-max-level = <4095>;
+	qcom,mdss-brightness-max-level = <4095>;
+	qcom,mdss-dsi-bl-pmic-control-type = "bl_ctrl_dcs";
+};
+
+&dsi_pd1965_tm_nt36672a_fhdplus_video_display {
+	pinctrl-names = "panel_active", "panel_suspend";
+	pinctrl-0 = <&sde_dsi_active>;
+	pinctrl-1 = <&sde_dsi_suspend>;
+	qcom,dsi-display-active;
+};
+
+&dsi_pd1965_hx_hx83112a_fhdplus_video {
+	qcom,panel-supply-entries = <&dsi_panel_pwr_supply>;
+	qcom,platform-reset-gpio = <&tlmm 90 0>;
+	qcom,platform-tp-reset-gpio = <&tlmm 119 0>;
+	qcom,mdss-dsi-bl-min-level = <1>;
+	qcom,mdss-dsi-bl-max-level = <4095>;
+	qcom,mdss-brightness-max-level = <4095>;
+	qcom,mdss-dsi-bl-pmic-control-type = "bl_ctrl_dcs";
+};
+
+&dsi_pd1965_hx_hx83112a_fhdplus_video_display {
+	pinctrl-names = "panel_active", "panel_suspend";
+	pinctrl-0 = <&sde_dsi_active>;
+	pinctrl-1 = <&sde_dsi_suspend>;
+	qcom,dsi-display-active;
+};
+
+&dsi_pd1965_jdi_nt36672a_fhdplus_video {
+	qcom,panel-supply-entries = <&dsi_panel_pwr_supply>;
+	qcom,platform-reset-gpio = <&tlmm 90 0>;
+	qcom,platform-tp-reset-gpio = <&tlmm 119 0>;
+	qcom,mdss-dsi-bl-min-level = <1>;
+	qcom,mdss-dsi-bl-max-level = <4095>;
+	qcom,mdss-brightness-max-level = <4095>;
+	qcom,mdss-dsi-bl-pmic-control-type = "bl_ctrl_dcs";
+};
+
+&dsi_pd1965_jdi_nt36672a_fhdplus_video_display {
+	pinctrl-names = "panel_active", "panel_suspend";
+	pinctrl-0 = <&sde_dsi_active>;
+	pinctrl-1 = <&sde_dsi_suspend>;
+	qcom,dsi-display-active;
+};
+
+&dsi_pd1965_lianchuan_nt36672a_fhdplus_video {
+	qcom,panel-supply-entries = <&dsi_panel_pwr_supply>;
+	qcom,platform-reset-gpio = <&tlmm 90 0>;
+	qcom,platform-tp-reset-gpio = <&tlmm 119 0>;
+	qcom,mdss-dsi-bl-min-level = <1>;
+	qcom,mdss-dsi-bl-max-level = <4095>;
+	qcom,mdss-brightness-max-level = <4095>;
+	qcom,mdss-dsi-bl-pmic-control-type = "bl_ctrl_dcs";
+};
+
+&dsi_pd1965_lianchuan_nt36672a_fhdplus_video_display {
+	pinctrl-names = "panel_active", "panel_suspend";
+	pinctrl-0 = <&sde_dsi_active>;
+	pinctrl-1 = <&sde_dsi_suspend>;
+	qcom,dsi-display-active;
+};

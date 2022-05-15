@@ -1,0 +1,173 @@
+/* Copyright (c) 2018, 2019, The Linux Foundation. All rights reserved.
+ *
+ * This program is free software; you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License version 2 and
+ * only version 2 as published by the Free Software Foundation.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ */
+
+#include "trinket-audio-overlay-PD2007F_EX.dtsi"
+
+/*vivo display team add begin*/
+&qupv3_se1_i2c {
+	status = "ok";
+	lm3697_i2c@36 {
+ 		compatible = "lm3697_i2c";
+ 		reg = <0x36>;
+ 		status = "ok";
+ 	};
+};
+
+&dsi_panel_pwr_supply {
+	qcom,panel-supply-entry@0 {
+		qcom,supply-min-voltage = <1800000>;
+		qcom,supply-max-voltage = <1800000>;
+		qcom,supply-post-on-sleep = <0>;
+	};
+	qcom,panel-supply-entry@1 {
+		qcom,supply-min-voltage = <5500000>;
+		qcom,supply-max-voltage = <5500000>;
+		qcom,supply-post-on-sleep = <5>;
+	};
+
+	qcom,panel-supply-entry@2 {
+		qcom,supply-min-voltage = <5500000>;
+		qcom,supply-max-voltage = <5500000>;
+		qcom,supply-post-on-sleep = <0>;
+	};
+};
+
+&dsi_pd2007_tm_nt36672a_fhdplus_video {
+	qcom,panel-supply-entries = <&dsi_panel_pwr_supply>;
+	qcom,platform-reset-gpio = <&tlmm 90 0>;
+	qcom,platform-tp-reset-gpio = <&tlmm 119 0>;
+	qcom,platform-bklight-en-gpio = <&tlmm 49 0>;
+	qcom,mdss-dsi-bl-min-level = <1>;
+	qcom,mdss-dsi-bl-max-level = <2047>;
+	qcom,mdss-brightness-max-level = <2047>;
+	qcom,mdss-dsi-bl-pmic-control-type = "bl_ctrl_i2c";
+};
+
+&dsi_pd2007_tm_nt36672a_fhdplus_video_display {
+	pinctrl-names = "panel_active", "panel_suspend";
+	pinctrl-0 = <&sde_dsi_active>;
+	pinctrl-1 = <&sde_dsi_suspend>;
+	qcom,dsi-display-active;
+};
+
+&dsi_pd2007_jdi_nt36672a_fhdplus_video {
+	qcom,panel-supply-entries = <&dsi_panel_pwr_supply>;
+	qcom,platform-reset-gpio = <&tlmm 90 0>;
+	qcom,platform-tp-reset-gpio = <&tlmm 119 0>;
+	qcom,platform-bklight-en-gpio = <&tlmm 49 0>;
+	qcom,mdss-dsi-bl-min-level = <1>;
+	qcom,mdss-dsi-bl-max-level = <2047>;
+	qcom,mdss-brightness-max-level = <2047>;
+	qcom,mdss-dsi-bl-pmic-control-type = "bl_ctrl_i2c";
+};
+
+&dsi_pd2007_jdi_nt36672a_fhdplus_video_display {
+	pinctrl-names = "panel_active", "panel_suspend";
+	pinctrl-0 = <&sde_dsi_active>;
+	pinctrl-1 = <&sde_dsi_suspend>;
+	qcom,dsi-display-active;
+};
+/*vivo display team add end*/
+
+&qupv3_se1_i2c {
+	status = "ok";
+	nq@28 {
+		compatible = "qcom,nq-nci";
+		reg = <0x28>;
+		vivo,nfc_support = <1>;
+		vivo,boardversion_shift = <0>;
+		vivo,boardversion_mask = <7>;
+		vivo,boardversion_num = <4>;
+		vivo,boardversions = "0000000","0000001","1111110","1101111";
+
+		qcom,nq-irq = <&tlmm 85 0x00>;
+		qcom,nq-ven = <&tlmm 83 0x00>;
+		qcom,nq-firm = <&tlmm 84 0x00>;
+		qcom,nq-clkreq = <&tlmm 95 0x00>;
+		qcom,nq-esepwr = <&tlmm 127 0x00>;
+		interrupt-parent = <&tlmm>;
+		interrupts = <85 0>;
+		interrupt-names = "nfc_irq";
+		pinctrl-names = "nfc_active", "nfc_suspend";
+		pinctrl-0 = <&nfc_int_active &nfc_enable_active
+				&nfc_clk_req_active>;
+		pinctrl-1 = <&nfc_int_suspend &nfc_enable_suspend
+				&nfc_clk_req_suspend>;
+		status = "ok";
+	};
+};
+
+&soc {
+	fp_id:fp_id{
+		compatible = "fp-id";
+		status = "ok";
+		vivo,project-name = "PD2007F_EX";
+		//fp_id,gpios = <&tlmm 8 0>;
+		//pinctrl-names = "fp_id_gpio_up","fp_id_gpio_down";
+		//pinctrl-0 = <&fp_id_gpio_up>;
+		//pinctrl-1 = <&fp_id_gpio_down>;
+	};
+	goodix_fp {
+		status = "ok";
+		compatible = "goodix,fingerprint";
+
+		goodix,gpio_reset = <&tlmm 131 0x00>;
+		goodix,gpio_irq = <&tlmm 92 0x00>;
+		//vdd config
+		goodix,vdd_use_gpio;
+		goodix,gpio_vdd_en= <&tlmm 101 0x00>;
+		//goodix,vdd_use_pmic;
+		//vdd-supply = <&pm8150_l14>;
+	};
+	
+	/*vivo chenming added for sim detect*/
+ 	tcard_sim_slot:tcard_sim {
+ 		status = "ok";
+ 		compatible = "card-detect";
+ 		factory-test,sim1-card;
+ 		factory-test,sim2-card;
+ 		card-detect-sim1,gpios = <&tlmm 79 0x00>;
+ 		card-detect-sim2,gpios = <&tlmm 75 0x00>;
+ 		vivo,sim1-reverse-detect;
+		vivo,sim2-reverse-detect;
+ 		pinctrl-names = "default";
+		pinctrl-0 = <&card_detect>;
+ 	};
+ 	/*vivo chenming added for sim detect end*/
+
+	/*vivo sensor team added for sar power begin*/
+	sar_power: sar_power_device {
+		compatible = "sar-power";
+		interrupt-parent = <&tlmm>;
+		interrupts = <126 0x2>,<130 0x2>;
+		sar-power-rf-detect,gpios = <&tlmm 126 0>;
+		sar-power-rf-detect_1,gpios = <&tlmm 130 0>;
+		pinctrl-names = "default";
+		pinctrl-0 = <&sar_power_no_pull>;
+	};
+	/*vivo sensor team added for sar power end*/
+};
+
+/*vivo sensor team added start*/
+&sar_power_no_pull{
+	mux{
+		pins = "gpio126","gpio130";
+		function = "gpio";
+	};
+
+	config{
+		pins = "gpio126","gpio130";
+		drive-strength = <2>;
+		bias-disable;
+	};
+};
+/*vivo sensor team added end*/

@@ -1,0 +1,222 @@
+/* touchscreen relative config for PD1965 */
+
+&soc {
+	tp_module1 {
+		compatible = "vivo,touch-panel-module";
+		vts-ic-number=<81>;
+		vts-type=<0>;
+		vts-lcmid=<16>;
+		vts-dimention-x=<1080>;
+		vts-dimention-y=<2340>;
+		vts-tx-sensors=<16>;
+		vts-rx-sensors=<36>;
+		vts-incell=<1>;
+		vts-need-caliberation=<0>;
+		vts-virtual-proximinity=<0>;
+		vts-long-press=<0>;
+		vts-module-vendor=<0xF0>;
+		vts-no-flash=<1>;
+	};
+
+	tp_module2 {
+		compatible = "vivo,touch-panel-module";
+		vts-ic-number=<81>;
+		vts-type=<0>;
+		vts-lcmid=<65>;
+		vts-dimention-x=<1080>;
+		vts-dimention-y=<2340>;
+		vts-tx-sensors=<16>;
+		vts-rx-sensors=<36>;
+		vts-incell=<1>;
+		vts-need-caliberation=<0>;
+		vts-virtual-proximinity=<0>;
+		vts-long-press=<0>;
+		vts-module-vendor=<0xF0>;
+		vts-no-flash=<1>;
+	};
+
+	tp_module3 {
+		compatible = "vivo,touch-panel-module";
+		vts-ic-number=<101>;
+		vts-type=<0>;
+		vts-lcmid=<130>;
+		vts-dimention-x=<1080>;
+		vts-dimention-y=<2340>;
+		vts-tx-sensors=<18>;
+		vts-rx-sensors=<36>;
+		vts-incell=<1>;
+		vts-need-caliberation=<0>;
+		vts-virtual-proximinity=<0>;
+		vts-long-press=<0>;
+		vts-module-vendor=<0xF0>;
+		vts-no-flash=<1>;
+	};	
+
+	tp_module4 {
+		compatible = "vivo,touch-panel-module";
+		vts-ic-number=<81>;
+		vts-type=<0>;
+		vts-lcmid=<83>;
+		vts-dimention-x=<1080>;
+		vts-dimention-y=<2340>;
+		vts-tx-sensors=<16>;
+		vts-rx-sensors=<36>;
+		vts-incell=<1>;
+		vts-need-caliberation=<0>;
+		vts-virtual-proximinity=<0>;
+		vts-long-press=<0>;
+		vts-module-vendor=<0xF0>;
+		vts-no-flash=<1>;
+	};	
+
+	tp_module5 {
+		compatible = "vivo,touch-panel-module";
+		vts-ic-number=<81>;
+		vts-type=<0>;
+		vts-lcmid=<17>;
+		vts-dimention-x=<1080>;
+		vts-dimention-y=<2340>;
+		vts-tx-sensors=<16>;
+		vts-rx-sensors=<36>;
+		vts-incell=<1>;
+		vts-need-caliberation=<0>;
+		vts-virtual-proximinity=<0>;
+		vts-long-press=<0>;
+		vts-module-vendor=<0xF0>;
+		vts-no-flash=<1>;
+	};	
+
+	tp_module6 {
+		compatible = "vivo,touch-panel-module";
+		vts-ic-number=<81>;
+		vts-type=<0>;
+		vts-lcmid=<66>;
+		vts-dimention-x=<1080>;
+		vts-dimention-y=<2340>;
+		vts-tx-sensors=<16>;
+		vts-rx-sensors=<36>;
+		vts-incell=<1>;
+		vts-need-caliberation=<0>;
+		vts-virtual-proximinity=<0>;
+		vts-long-press=<0>;
+		vts-module-vendor=<0xF0>;
+		vts-no-flash=<1>;
+	};	
+};
+
+&tlmm{
+	qupv3_se8_spi_pins_1965: qupv3_se8_spi_pins_1965 {
+		qupv3_se8_spi_active_1965: qupv3_se8_spi_active_1965 {
+		 	mux {
+				pins = "gpio18", "gpio19", "gpio21";
+				function = "qup13";
+		 	};
+		 	config {
+			 	pins = "gpio18", "gpio19", "gpio21";
+			 	drive-strength = <2>;
+			 	bias-pull-down;
+		 	};
+		};
+
+		qupv3_se8_spi_clk_active_1965: qupv3_se8_spi_clk_active_1965 {
+			mux {
+				pins = "gpio20";
+				function = "qup13";
+			};
+			config {
+				drive-strength = <6>;
+				bias-pull-down;
+			};
+		};
+
+		qupv3_se8_spi_sleep_1965: qupv3_se8_spi_sleep_1965 {
+		 	mux {
+				pins = "gpio18", "gpio19";
+				function = "gpio";
+		 	};
+		 	config {
+			 	pins = "gpio18", "gpio19";
+			 	drive-strength = <2>;
+			 	bias-pull-down;
+		 	};
+		};
+
+		qupv3_se8_spi_clk_sleep_1965: qupv3_se8_spi_clk_sleep_1965 {
+			mux {
+				pins = "gpio20";
+				function = "gpio";
+			};
+			config {
+				pins = "gpio20";
+				drive-strength = <6>;
+				bias-disable;
+				output-low;
+			};
+		};
+
+		qupv3_se8_spi_cs_sleep_1965: qupv3_se8_spi_cs_sleep_1965 {
+			mux {
+				pins = "gpio21";
+				function = "gpio";
+			};
+			config {
+				pins = "gpio21";
+				drive-strength = <2>;
+				bias-pull-up;
+			};
+		};
+
+	};
+};
+
+
+&qupv3_se8_spi {
+	status = "okay";
+	pinctrl-names = "default", "sleep";
+	pinctrl-0 = <&qupv3_se8_spi_clk_active_1965 &qupv3_se8_spi_active_1965>;
+	pinctrl-1 = <&qupv3_se8_spi_sleep_1965 &qupv3_se8_spi_clk_sleep_1965 &qupv3_se8_spi_cs_sleep_1965>;
+	vts_device@0 {
+		compatible = "vivo,ts-spi";
+		status = "okay";
+		reg=<0>;
+		spi-max-frequency = <4800000>;
+		nt36672 {
+			compatible = "novatek,NVT-ts-spi-v2";
+			status = "ok";
+			vts-type=<0>;
+			vts-ic-number=<81>;
+			spi-max-frequency = <9600000>;	//4800000,9600000,15000000,19200000
+			novatek,irq-gpio = <&tlmm 88 0x2001>;
+			novatek,cs-gpio = <&tlmm 21 0x00>;
+			
+			sensor-test-key="com.nttouchscreen.mptest:MainActivity:android.intent.action.novatek:0:testResult";
+			lcm-noise-test-key="com.nt36xxxtouchscreen.deltadiff:MainActivity:null:null:null";
+			rawdata-test-key="com.nttouchscreen.getdata:MainActivity:null:null:null";
+			rf-noise-test-key="com.nt36xxxtouchscreen.deltadiff:BspTest:android.intent.action.nvtdeltadiff:0:testResult";
+
+			novatek,swrst-n8-addr = <0x03F0FE>;
+		};
+
+		hx83112 {
+			compatible = "himax,hx83112-spi-v2";
+			status = "ok";
+			vts-type=<0>;
+			vts-ic-number=<101>;
+			spi-max-frequency = <9600000>;	//4800000,9600000,15000000,19200000
+			himax,rst-gpio = <&tlmm 119 0x00>;
+			himax,irq-gpio = <&tlmm 88 0x2001>;
+			himax,panel-coords = <0 1080 0 2340>;
+			himax,display-coords = <0 1080 0 2340>;
+			himax,tx-sensors = <18>;
+			himax,rx-sensors = <36>;
+			
+			sensor-test-key="com.himax.mpap:MainActivity:android.intent.action.himax:0:testResult";
+			lcm-noise-test-key="com.ln2.himaxtouch:RawdataRecord.HoppingNoiseGet:null:null:null";
+			rawdata-test-key="com.ln2.himaxtouch:DataShowActivity:null:null:null";
+			rf-noise-test-key="com.ln2.himaxtouch:BspTestActivity:android.intent.action.himax:0:testResult";
+
+			//novatek,swrst-n8-addr = <0x03F0FE>;
+		};
+	};
+};
+

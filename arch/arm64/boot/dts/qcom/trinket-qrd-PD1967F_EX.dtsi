@@ -1,0 +1,491 @@
+/*
+ * Copyright (c) 2019, The Linux Foundation. All rights reserved.
+ *
+ * This program is free software; you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License version 2 and
+ * only version 2 as published by the Free Software Foundation.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ */
+#include <dt-bindings/gpio/gpio.h>
+#include <dt-bindings/iio/qcom,spmi-vadc.h>
+#include <dt-bindings/input/input.h>
+#include "trinket-thermal-overlay.dtsi"
+#include "trinket-sde-display.dtsi"
+#include "trinket-audio-overlay-PD1967F_EX.dtsi"
+#include <dt-bindings/clock/qcom,gcc-trinket.h>
+
+#include <dt-bindings/clock/qcom,gcc-trinket.h>
+#include "trinket-camera-sensor-qrd-PD1967F_EX.dtsi"
+
+&qupv3_se1_i2c {
+	status = "ok";
+	//#include "smb1355.dtsi"
+};
+
+&soc {
+	mtp_batterydata: qcom,battery-data {
+		qcom,batt-id-range-pct = <15>;
+		#include "qg-batterydata-ascent-3450mah.dtsi"
+		#include "qg-batterydata-mlp356477-2800mah.dtsi"
+	};
+};
+
+&pmi632_qg {
+	qcom,battery-data = <&mtp_batterydata>;
+	qcom,qg-iterm-ma = <100>;
+	qcom,hold-soc-while-full;
+	qcom,linearize-soc;
+	qcom,qg-use-s7-ocv;
+};
+
+&pmi632_charger {
+	qcom,battery-data = <&mtp_batterydata>;
+	//qcom,suspend-input-on-debug-batt;
+	//qcom,sw-jeita-enable;
+	/* SMB1355 only */
+	qcom,sec-charger-config = <2>;
+	dpdm-supply = <&qusb_phy0>;
+	qcom,charger-temp-max = <800>;
+	qcom,smb-temp-max = <800>;
+	qcom,auto-recharge-soc = <98>;
+	//qcom,flash-disable-soc = <10>;
+	//qcom,hw-die-temp-mitigation;
+	//qcom,hw-connector-mitigation;
+	//qcom,connector-internal-pull-kohm = <100>;
+	qcom,thermal-mitigation = <3000000 2500000
+			2000000 1500000 1000000 500000>;
+};
+
+
+&qupv3_se1_i2c {
+	status = "ok";
+	nq@28 {
+		compatible = "qcom,nq-nci";
+		reg = <0x28>;
+		vivo,nfc_support = <1>;
+		vivo,boardversion_shift = <0>;
+		vivo,boardversion_mask = <1>;
+		vivo,boardversion_num = <1>;
+		vivo,boardversions = "0";
+
+		qcom,nq-irq = <&tlmm 85 0x00>;
+		qcom,nq-ven = <&tlmm 83 0x00>;
+		qcom,nq-firm = <&tlmm 84 0x00>;
+		//qcom,nq-clkreq = <&tlmm 95 0x00>; //use XTAL
+		//qcom,nq-esepwr = <&tlmm 82 0x00>;
+		interrupt-parent = <&tlmm>;
+		interrupts = <85 0>;
+		interrupt-names = "nfc_irq";
+		pinctrl-names = "nfc_active", "nfc_suspend";
+		pinctrl-0 = <&nfc_int_active &nfc_enable_active
+				&nfc_clk_req_active>;
+		pinctrl-1 = <&nfc_int_suspend &nfc_enable_suspend
+				&nfc_clk_req_suspend>;
+		status = "disabled";
+	};
+};
+
+&sdhc_1 {
+	vdd-supply = <&pm6125_l24>;
+	qcom,vdd-voltage-level = <2950000 2950000>;
+	qcom,vdd-current-level = <0 570000>;
+
+	vdd-io-supply = <&pm6125_l11>;
+	qcom,vdd-io-always-on;
+	qcom,vdd-io-lpm-sup;
+	qcom,vdd-io-voltage-level = <1800000 1800000>;
+	qcom,vdd-io-current-level = <0 325000>;
+
+	pinctrl-names = "active", "sleep";
+	pinctrl-0 = <&sdc1_clk_on &sdc1_cmd_on &sdc1_data_on
+					&sdc1_rclk_on>;
+	pinctrl-1 = <&sdc1_clk_off &sdc1_cmd_off &sdc1_data_off
+					&sdc1_rclk_off>;
+
+	status = "disabled";
+};
+
+&tlmm {
+	sim2_cd_default: sim2_cd_default {
+		mux {
+			pins = "gpio75";
+			function = "gpio";
+		};
+
+		config {
+			pins = "gpio75";
+			drive-strength = <2>;
+			bias-disable;
+		};
+	};
+
+	sim1_cd_default: sim1_cd_default {
+		mux {
+			pins = "gpio79";
+			function = "gpio";
+		};
+
+		config {
+			pins = "gpio79";
+			drive-strength = <2>;
+			bias-disable;
+		};
+	};
+};
+
+&sdhc_2 {
+	vdd-supply = <&pm6125_l22>;
+	qcom,vdd-voltage-level = <2950000 2950000>;
+	qcom,vdd-current-level = <0 800000>;
+
+	vdd-io-supply = <&pm6125_l5>;
+	qcom,vdd-io-voltage-level = <1800000 2950000>;
+	qcom,vdd-io-current-level = <0 22000>;
+
+	pinctrl-names = "active", "sleep", "default";
+	pinctrl-0 = <&sdc2_clk_on  &sdc2_cmd_on &sdc2_data_on &sdc2_cd_on>;
+	pinctrl-1 = <&sdc2_clk_off &sdc2_cmd_off &sdc2_data_off &sdc2_cd_off>;
+	pinctrl-2 = <&sim1_cd_default &sim2_cd_default>;
+	fast_power_off;
+
+	cd-gpios = <&tlmm 98 GPIO_ACTIVE_HIGH>;
+
+	status = "ok";
+};
+
+&pmi632_gpios {
+/*
+	smb_en {
+		smb_en_default: smb_en_default {
+			pins = "gpio2";
+			function = "func1";
+			output-enable;
+		};
+	};
+*/
+	pmi632_sense {
+		/* GPIO 7 and 8 are external-sense pins for PMI632 */
+		pmi632_sense_default: pmi632_sense_default {
+			pins = "gpio7", "gpio8";
+			bias-high-impedance;	/* disable the GPIO */
+			bias-disable;		/* no-pull */
+		};
+	};
+
+	pmi632_ctm {
+		/* Disable GPIO1 for h/w base mitigation */
+		pmi632_ctm_default: pmi632_ctm_default {
+			pins = "gpio1";
+			bias-high-impedance;	/* disable the GPIO */
+			bias-disable;		/* no-pull */
+		};
+	};
+};
+
+&pm6125_gpios {
+	key_vol_up {
+		key_vol_up_default: key_vol_up_default {
+			pins = "gpio5";
+			function = "normal";
+			input-enable;
+			bias-pull-up;
+			power-source = <0>;
+		};
+	};
+};
+
+&soc {
+	gpio_keys {
+		compatible = "gpio-keys";
+		label = "gpio-keys";
+
+		pinctrl-names = "default";
+		pinctrl-0 = <&key_vol_up_default>;
+
+		vol_up {
+			label = "volume_up";
+			gpios = <&pm6125_gpios 5 GPIO_ACTIVE_LOW>;
+			linux,input-type = <1>;
+			linux,code = <KEY_VOLUMEUP>;
+			linux,can-disable;
+			debounce-interval = <15>;
+			gpio-key,wakeup;
+		};
+	};
+
+
+
+	fp_id:fp_id{
+		compatible = "fp-id";
+		status = "ok";
+		vivo,project-name = "PD1967F_EX";
+		fp_id,gpios = <&tlmm 8 0>;
+		pinctrl-names = "fp_id_gpio_up",
+						"fp_id_gpio_down";
+		pinctrl-0 = <&fp_id_gpio_up>;
+		pinctrl-1 = <&fp_id_gpio_down>;
+	};
+
+	goodix_gf9518 {
+		status = "ok";
+		compatible = "goodix,udfingerprint";
+		goodix,gpio_reset = <&tlmm 93 0x00>;
+		goodix,gpio_irq = <&tlmm 92 0x00>;
+
+		//vdd 3.3v config
+		goodix,vdd_use_gpio;
+		goodix,gpio_vdd_en= <&tlmm 49 0x00>;
+
+		//vddio 1.8v config
+		goodix,vddio_use_gpio;
+		goodix,gpio_vddio_en= <&tlmm 131 0x00>;
+
+	};
+
+	egistec_et713 {
+		status = "ok";
+		compatible = "egistec,et713";
+		egistec,gpio_reset = <&tlmm 93 0x00>;
+		egistec,gpio_irq = <&tlmm 92 0x00>;
+		egistec,gpio_vcc_en= <&tlmm 49 0x00>;
+	};
+	
+	/*added for sim detect*/
+	tcard_sim_slot:tcard_sim {
+		status = "ok";
+		compatible = "card-detect";
+		factory-test,sim1-card;
+		factory-test,sim2-card;
+		card-detect-sim1,gpios = <&tlmm 79 0x00>;
+		card-detect-sim2,gpios = <&tlmm 75 0x00>;
+		vivo,sim1-reverse-detect;
+		vivo,sim2-reverse-detect;
+		pinctrl-names = "default";
+		pinctrl-0 = <&card_detect>;
+	};
+	/*added for sim detect end*/
+
+	/*vivo sensor team added for sar power*/
+	sar_power: sar_power_device {
+		compatible = "sar-power";
+		interrupt-parent = <&tlmm>;
+		interrupts = <126 0x2>;
+		sar-power-rf-detect,gpios = <&tlmm 126 0>;
+		pinctrl-names = "default";
+		pinctrl-0 = <&sar_power_no_pull>;
+	};
+
+};
+/*
+&tlmm {
+	smb_int_default: smb_int_default {
+		mux {
+			pins = "gpio130";
+			function = "gpio";
+		};
+		config {
+			pins = "gpio130";
+			bias-pull-up;
+			input-enable;
+		};
+	};
+};
+
+&smb1355 {
+	pinctrl-names = "default";
+	pinctrl-0 = <&smb_int_default>;
+	interrupt-parent = <&tlmm>;
+	interrupts = <130 IRQ_TYPE_LEVEL_LOW>;
+	status = "ok";
+};
+
+&smb1355_charger {
+	pinctrl-names = "default";
+	pinctrl-0 = <&smb_en_default &pmi632_sense_default &pmi632_ctm_default>;
+	qcom,parallel-mode = <1>;
+	qcom,disable-ctm;
+	qcom,hw-die-temp-mitigation;
+	status = "ok";
+};
+*/
+&ufsphy_mem {
+	compatible = "qcom,ufs-phy-qmp-v3-660";
+
+	vdda-phy-supply = <&pm6125_l4>; /* 0.9v */
+	vdda-pll-supply = <&pm6125_l10>; /* 1.8v */
+	vdda-phy-max-microamp = <51400>;
+	vdda-pll-max-microamp = <14200>;
+
+	status = "ok";
+};
+
+&ufshc_mem {
+	vdd-hba-supply = <&ufs_phy_gdsc>;
+	vdd-hba-fixed-regulator;
+	vcc-supply = <&pm6125_l24>;
+	vcc-voltage-level = <2950000 2960000>;
+	vccq2-supply = <&pm6125_l11>;
+	vcc-max-microamp = <600000>;
+	vccq2-max-microamp = <600000>;
+
+	qcom,vddp-ref-clk-supply = <&pm6125_l18>;
+	qcom,vddp-ref-clk-max-microamp = <100>;
+	qcom,vddp-ref-clk-min-uV = <1200000>;
+	qcom,vddp-ref-clk-max-uV = <1232000>;
+
+	status = "ok";
+};
+
+&pmi632_vadc {
+	bat_therm {
+		qcom,lut-index = <0>;
+	};
+
+	bat_therm_30k {
+		qcom,lut-index = <0>;
+	};
+
+	bat_therm_400k {
+		qcom,lut-index = <0>;
+	};
+};
+
+&usb0 {
+	extcon = <&pmi632_charger>, <&eud>;
+};
+
+&pm6125_pwm {
+	status = "ok";
+};
+
+&qusb_phy0 {
+	qcom,qusb-phy-init-seq = <0xc8 0x80
+				0x93 0x84
+				0x83 0x88
+				0xc7 0x8c
+				0x30 0x08
+				0x79 0x0c
+				0x21 0x10
+				0x14 0x9c
+				0x80 0x04
+				0x9f 0x1c
+				0x00 0x18>;
+};
+
+&pm8008_8 {
+		status = "disabled";
+};
+
+&pm8008_9 {
+		status = "disabled";
+};
+
+//vivo pengzuo add for l12 reboot pull-down
+&rpm_bus {
+       rpm-regulator-ldoa12 {
+               qcom,init-enable = <0>;
+               regulator-l12 {
+                       regulator-boot-on;
+               };
+       };
+};
+
+//TOUCH 
+&soc {
+	tp_module1 {
+		compatible = "vivo,touch-panel-module";
+		vts-ic-number=<46>;
+		vts-type=<0>;
+		vts-lcmid=<32>;
+		vts-dimention-x=<1080>;
+		vts-dimention-y=<2340>;
+		vts-tx-sensors=<33>;
+		vts-rx-sensors=<15>;
+		vts-incell=<0>;
+		vts-need-caliberation=<0>;
+		vts-virtual-proximinity=<0>;
+		vts-long-press=<1>;
+		vts-module-vendor=<0x90>;
+		vts-game-mode=<1>;
+	};
+	tp_module2 {
+		compatible = "vivo,touch-panel-module";
+		vts-ic-number=<46>;
+		vts-type=<0>;
+		vts-lcmid=<33 34 35>;
+		vts-dimention-x=<1080>;
+		vts-dimention-y=<2340>;
+		vts-tx-sensors=<33>;
+		vts-rx-sensors=<15>;
+		vts-incell=<0>;
+		vts-need-caliberation=<0>;
+		vts-virtual-proximinity=<0>;
+		vts-long-press=<1>;
+		vts-module-vendor=<0x90>;
+		vts-game-mode=<1>;
+		
+	};
+
+};
+
+&qupv3_se2_i2c {
+	status = "ok";
+
+	goodix_i2c@5d {
+		compatible = "goodix,gt9886_V2";
+		reg = <0x5d>;
+		interrupt-parent = <&tlmm>;
+		interrupts = <88 0x2008>;
+
+		goodix,power-gpio = <&tlmm 45 0x00>;	/*3V GPIO*/
+		//avddvtouch-supply = <&pm8150_l17>;	/*3V PMIC*/
+
+		//goodix,dvdd-gpio = <&tlmm 30 0x00>;	/*1.8V GPIO*/
+		//vtouch-supply = <&pm6125_l9>;			/*1.8V PMIC*/
+
+		/* pins used by touchscreen */
+        //pinctrl-names = "pmx_ts_active","pmx_ts_suspend";
+        pinctrl-names ="default";
+		//pinctrl-0 = <&ts_reset_active_s3706 &ts_int_active_s3706>;/* xxx is defined in  xxx-pinctrl.dtsi file*/
+        //pinctrl-1 = <&ts_int_suspend_s3706 &ts_reset_suspend_s3706>;
+		pinctrl-0 = <&ts_reset_active_gt9886 &ts_int_active_gt9886>;
+
+		goodix,reset-gpio = <&tlmm 119 0x00>;
+        goodix,irq-gpio = <&tlmm 88 0x00>;
+		goodix,irq-flags = <2>; /* 1:trigger rising, 2:trigger falling;*/
+
+		vts-ic-number=<46>;
+		vts-type=<0>;
+		sensor-test-key= "com.goodix:GTMTest:android.intent.action.goodix:0:goodixTestResult";
+		lcm-noise-test-key="com.goodix.deltadiff:DeltaDiffActivity:action.null:null:null";
+		rawdata-test-key="com.goodix.deltadiff:DataShowActivity:null:null:null";
+		rf-noise-test-key="com.goodix.deltadiff:BspTestActivity:com.goodix.deltadiff.action.Receiver:0:GOODIX_DELTA";
+
+        goodix,panel-max-id = <10>;
+        goodix,panel-max-x = <1080>;
+        goodix,panel-max-y = <2340>;
+        goodix,panel-max-w = <512>;
+        goodix,panel-max-p = <512>;
+		goodix,panel-key-map = <158 172 217>; /*KEY_BACK, KEY_HOMEPAGE, KEY_SEARCH*/
+		goodix,power-on-delay-us = <300000>; /*300ms*/
+		goodix,power-off-delay-us = <5000>;
+		goodix,i2c-read-max-size = <2048>;/*i2c read max byte one time*/
+		/*goodix,swap-axis;*/
+		goodix,x2x;
+		goodix,y2y;
+		goodix,pen-enable;
+		goodix,key-of-pen = <331 332>;/*BTN_STYLUS, BTN_STYLUS2*/
+		sensor0 {
+			normal-cfg = [
+			];
+		};
+	};
+};
+
+&dsi_pd1967_s6e8fc1_fhdplus_video_display {
+	qcom,dsi-display-active;
+};

@@ -1,0 +1,7 @@
+
+config DISPLAY_VIVO
+	depends on DRM_MSM
+	bool "mdss config for vivo product"
+	default n
+	---help---
+	Mdss config signature for vivo product

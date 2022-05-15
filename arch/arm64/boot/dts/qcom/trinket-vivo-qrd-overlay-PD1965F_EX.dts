@@ -1,0 +1,35 @@
+/* Copyright (c) 2018, 2019, The Linux Foundation. All rights reserved.
+ *
+ * This program is free software; you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License version 2 and
+ * only version 2 as published by the Free Software Foundation.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ */
+
+/dts-v1/;
+/plugin/;
+
+#include <dt-bindings/clock/qcom,gcc-trinket.h>
+#include "trinket-qrd.dtsi"
+#include "trinket-qrd-overlay-PD1965.dtsi"
+#include "sm6125-vivo-tp-PD1965.dtsi"
+#include "external-nfc-vivo-PD1965F_EX.dtsi"
+#include "external-charger-vivo-PD1965F_EX.dtsi"
+#include "sm6125-vivo-PD1965-otg.dtsi"
+
+/ {
+	model = "QRD SM6125 PD1965F_EX";
+	compatible = "qcom,trinket-qrd", "qcom,trinket", "qcom,qrd";
+	qcom,msm-id = <394 0x0>;
+	qcom,board-id = <11 15>;
+};
+
+&soc {
+	qcom,rmtfs_sharedmem@0 {
+		reg = <0x0 0x280000>;
+	};
+};

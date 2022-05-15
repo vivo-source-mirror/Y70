@@ -1,0 +1,410 @@
+
+&tlmm {
+	bq24192_int_default {
+		bq24192_int_default: bq24192_int_default {
+			mux {
+				pins = "gpio130";
+				function = "gpio";
+			};
+			config {
+				pins = "gpio130";
+				drive-strength = <2>;
+				bias-pull-up;
+			};
+		};
+	};
+	batid_gpio_default {
+		batid_gpio_default: batid_gpio_default {
+			mux {
+				pins = "gpio132";
+				function = "gpio";
+			};
+			config {
+				pins = "gpio132";
+				drive-strength = <2>;
+			};
+		};
+	};
+};
+&pm6125_vadc {
+	gpio4_pu2 {
+		reg = <ADC_GPIO4_PU2>;
+		label = "gpio4_pu2";
+		qcom,ratiometric;
+		qcom,hw-settle-time = <200>;
+		qcom,pre-scaling = <1 1>;
+	};
+};
+&pmi632_gpios {
+	pl_enable {
+		pl_enable_default: pl_enable_default {
+			pins = "gpio2";
+			function = "func1";
+			output-enable;
+		};
+	};
+	batid_adc {
+		batid_adc_default: batid_adc_default {
+			pins = "gpio3";
+			function = "normal";
+			bias-high-impedance;
+		};
+	};
+};
+&pmi632_vadc {
+	batid_vadc {
+		reg = <ADC_GPIO2>;
+		label = "batid_vadc";
+		qcom,pre-scaling = <1 1>;
+	};
+};
+
+&qupv3_se1_i2c {
+	status = "ok";
+		bq24192_otg_supply: bq24192-bq25892-hybrid@6b {
+			compatible = "ti,bq24192-bq25892-hybrid";
+			reg = <0x6b>;
+			ti,int-gpio = <&tlmm 130 0x00>;
+			interrupts = <130 8>;
+			pinctrl-names = "default";
+			pinctrl-0 = <&bq24192_int_default>;
+
+			regulator-name = "bq24192_otg_vreg";
+
+			/*config for bq24192*/
+			qcom,parallel-charger;
+			qcom,pd1965-flag;
+			bbk,charging-disabled;
+			//bbk,en-chg-gpio = <&pmi632_gpios 2 0>;
+			bbk,parallel-iindpm-ma = <1500>;
+			bbk,otg_func_support;
+			bbk,vadc_channel = <32>;
+			bbk,rsense-mohm = <120>;
+			bbk,bms-psy-name = "bms";
+			bbk,secondary-chg-psy-name = "secondary_ac";
+			ti,vbat-max-mv = <4400>;
+			ti,chg-current-ma = <1500>;
+			ti,pre-chg-current-ma = <200>;
+			ti,term-current-ma = <128>;
+			ti,sys-vimin-mv = <3500>;
+			ti,vin-limit-mv = <4200>;
+			ti,wlc-vin-limit-mv = <4100>;
+			ti,step-dwn-current-ma = <100>;
+			ti,cv-thr-mv = <4300>;
+			ti,icl-vbus-mv = <4600>;
+			ti,wlc-step-dwn-i-ma = <100>;
+			ti,wlc-dwn-input-i-ma = <100>;
+			ti,chg-tmout-mins = <600>;
+
+			/*config for bq25892*/
+			bbk,parallel-charger;
+			//bbk,en-gpio = <&pmi8950_gpios 2 0>;
+			ti,ircomp-mom = <0>;
+			ti,vclamp-mv = <0>;
+			ti,hvdcp-enable;
+			ti,vindpm-5v-thr-mv = <4400>;
+			ti,vindpm-9v-thr-mv = <7800>;
+			ti,vindpm-offset-mv = <500>;
+			ti,cfg-fastchg-current-ma = <2048>;
+			ti,parallel-usb-min-current-ma = <1200>;
+			ti,parallel-usb-9v-min-current-ma = <900>;
+			ti,parallel-fastchg-current-max-ma = <1500>;
+			ti,fastchg-current-max-ma = <1728>;
+			ti,fastchg-accuracy = <5>;
+			ti,use-absolute-vindpm;
+		};
+};
+
+&mtp_batterydata {
+	qcom,batt-id-range-pct = <100>;
+	#include "qg-batterydata-PD1965-5000mah.dtsi"
+};
+
+&pmi632_qg {
+	qcom,battery-data = <&mtp_batterydata>;
+	qcom,qg-ext-sns;
+
+	qcom,qg-iterm-ma = <350>;
+	qcom,hold-soc-while-full;
+	qcom,linearize-soc;
+	qcom,shutdown_soc_threshold = <40>;
+
+	qcom,vbatt-cutoff-mv = <3400>;
+	qcom,vbatt-empty-mv = <3200>;
+	qcom,vbatt-empty-cold-mv = <3000>;
+
+	qcom,s3-entry-ibat-ua = <40000>;
+	qcom,s3-exit-ibat-ua = <60000>;
+};
+
+&pmi632_charger {
+	qcom,battery-data = <&mtp_batterydata>;
+	qcom,sec-charger-config = <2>;
+	qcom,auto-recharge-soc = <99>;
+	qcom,chg-term-src = <1>;
+	qcom,chg-term-current-ma = <(-250)>;
+	qcom,float-option = <1>;
+	qcom,pd1965-flag;
+	qcom,fv-max-uv = <4430000>;
+	qcom,otg-cl-ua = <1500000>;
+	qcom,disable-suspend-on-collapse;
+
+	qcom,fcc-max-ua = <3500000>;
+	qcom,usb-icl-ua = <2000000>;
+	vivo,primary-fastchg-max-ua = <2300000>;
+	vivo,parallel-fastchg-max-ua = <1800000>;
+
+	/*primary board temp & parallel board temp*/
+	io-channels = <&pmi632_vadc ADC_USB_IN_V_16>,
+		      <&pmi632_vadc ADC_USB_IN_I>,
+		      <&pmi632_vadc ADC_CHG_TEMP>,
+		      <&pmi632_vadc ADC_DIE_TEMP>,
+		      <&pm6125_vadc ADC_AMUX_THM2_PU2>,
+		      <&pm6125_vadc ADC_GPIO4_PU2>;
+	io-channel-names = "usb_in_voltage",
+			   "usb_in_current",
+			   "chg_temp",
+			   "die_temp",
+			   "pri_ntc_temp",
+			   "pl_ntc_temp";
+
+	/* pl reuse battery temperature interface */
+	//vivo,pl-use-batt-temp-enable;
+
+	/* pl enable gpio config */
+	vivo,pl-enable-gpio = <&pmi632_gpios 2 0x00>;
+	pinctrl-names = "default";
+	pinctrl-0 = <&pl_enable_default>;
+
+	vivo,usbsel-gpio = <&tlmm 0 0>;
+	//vivo,usboe-gpio = <&tlmm 21 0>;
+
+	vivo,soft-term-enable;
+	vivo,soft-term-capacity-limit = <100>;
+	vivo,soft-term-timer-limit = <30>;//5min
+
+	vivo,tracking_soc_enable;
+	vivo,tracking_step_second= <10>;
+
+	/*charge condition force 5v*/
+	vivo,cc-force-5v-soc-limit = <90>;
+
+	/*charge condition force 5v,flashled enable*/
+	vivo,cc-force-5v-flashled-enable;
+
+	/*
+	enum SUPPORTED_ADAPTER {
+		SUPPORTED_ADAPTER_DEFAULT = 0
+		SUPPORTED_ADAPTER_VIVO_LV_DCHG__5V_4500MA = 1,
+		SUPPORTED_ADAPTER_VIVO_HV_DCHG__10V_2250MA = 2,
+		SUPPORTED_ADAPTER_QC20__9V_2000MA = 3,
+	};
+	*/
+	vivo,supported-adapter = <3>;
+
+	/*spec max and min current*/
+	vivo,current-spec-min-ma = <2200>;
+	vivo,current-spec-max-ma = <3800>;
+
+	/*battery temp compensation*/
+	//vivo,batt-temp-comp-enable;
+};
+
+
+&soc {
+	cms_v2 {
+		compatible = "vivo,charger-monitor-v2";
+
+		//vivo,battery-plugable = <0>;//0:unplugable,1:plugable , default:0
+
+		/* battery ID ADC */
+		io-channels = <&pmi632_vadc ADC_GPIO2>;
+		io-channel-names = "cms_batt_id";
+
+		pinctrl-names = "default";
+		pinctrl-0 = <&batid_adc_default &batid_gpio_default>;
+
+		default_board: single_charger_board {
+			/*default board: keep in xxxxxx*/
+			support-board-version = "01100110";	//get from "bbk_board_version":: vivo_boardinfo_print: board_id=11, board_version=111111, type=0, board_name:PDxxxx
+
+			vivo,bat-det-method = <0>;  //r:0 , rc:1 , eprom:2, ex-fg:3
+			vivo,bat-id-new-param-enable; //enable new bat id param
+			vivo,bat-id-gpio = <&tlmm 132 0x00>;
+			
+			//vivo,no-bat-warning;
+			//vivo,no-chg-timeout;
+			vivo,chg-timeout-mins = <600>;
+
+			//high temperature charger current control enable
+			vivo,htccc-enable;
+			vivo,htccc-data = <46 55 4100000 50000>;
+
+			vivo,fbon-scale-enable;
+			vivo,fbon-scale-data = <1 90 100>;
+
+			//vivo,switch-scale-enable;
+			vivo,switch-scale-data = <75 60>;
+
+			vivo,calling-scale-enable;
+			vivo,calling-scale-data = <60 34>;
+
+			//vivo,fixed-scale-enable;
+			vivo,fixed-scale-data = <60 2000 1600>;
+
+			//battery voltage compensate
+			vivo,vbat-r-comp = <20>;
+
+			/*data processing : batt-temp*/
+			//vivo,dp-batt-temp-enable;
+			vivo,dp-batt-temp-data = <100>;
+
+			/* usb connecter protect param */
+			//vivo,usb-connecter-protect-enable;
+			vivo,usb-id-protect-data= <1100 1547 500>;/* 500K, 2M, fcc */
+			vivo,usb-conn-heat-protect-data= <800 550>;
+
+			//ibat scale base on temperature
+			vivo,normal-tc-row-col = <7 7>;
+			vivo,normal-tc-data =
+						<550 8888 0 0 0 0 0>,
+						<450 549 50 0 0 0 0>,
+						<150 449 122 0 0 0 0>,
+						<100 149 100 4200000 70 0 0>,
+						<50 99 70 4200000 50 0 0>,
+						<0 49 50 0 0 0 0>,
+						<(-8888) (-1) 0 0 0 0 0>;
+
+			//adjust fastchg base on board temperature and fb off
+			vivo,intell-charge-enable;
+			vivo,parallel-temp-enable = <1 1>;//<x y> x:fb-on y:fb-off
+			//fb-on param
+			vivo,primary-fbon-tc-row-col = <5 3>;
+			vivo,primary-fbon-tc-data = <531 8888 500>,
+						    <490 530 900>,
+						    <470 489 1300>,
+						    <440 469 1700>,
+						    <(-8888) 439 2300>;
+			vivo,parallel-fbon-tc-row-col = <1 3>;
+			vivo,parallel-fbon-tc-data = <(-8888) 8888 0>;
+
+			//fb-off param
+			vivo,primary-fboff-tc-row-col = <6 3>;
+			vivo,primary-fboff-tc-data = <470 8888 600>,
+						     <450 469 1200>,
+						     <430 449 1500>,
+						     <403 429 1900>,
+						     <385 402 2000>,
+						     <(-8888) 386 2300>;
+			vivo,parallel-fboff-tc-row-col = <1 3>;
+			vivo,parallel-fboff-tc-data = <(-8888) 8888 0>;
+		};
+
+		dual_charger_board {
+			support-board-version = "11111101";	//get from "bbk_board_version":: vivo_boardinfo_print: board_id=11, board_version=111111, type=0, board_name:PDxxxx
+
+			vivo,bat-det-method = <0>;  //r:0 , rc:1 , eprom:2, ex-fg:3
+			vivo,bat-id-new-param-enable; //enable new bat id param
+			vivo,bat-id-gpio = <&tlmm 132 0x00>;
+			
+			//vivo,no-bat-warning;
+			//vivo,no-chg-timeout;
+			vivo,chg-timeout-mins = <600>;
+
+			//high temperature charger current control enable
+			vivo,htccc-enable;
+			vivo,htccc-data = <46 55 4100000 50000>;
+
+			vivo,fbon-scale-enable;
+			vivo,fbon-scale-data = <1 90 100>;
+
+			//vivo,switch-scale-enable;
+			vivo,switch-scale-data = <75 60>;
+
+			vivo,calling-scale-enable;
+			vivo,calling-scale-data = <60 34>;
+
+			//vivo,fixed-scale-enable;
+			vivo,fixed-scale-data = <60 2000 1600>;
+
+			//battery voltage compensate
+			vivo,vbat-r-comp = <20>;
+
+			/*data processing : batt-temp*/
+			//vivo,dp-batt-temp-enable;
+			vivo,dp-batt-temp-data = <100>;
+
+			/* usb connecter protect param */
+			//vivo,usb-connecter-protect-enable;
+			vivo,usb-id-protect-data= <1100 1547 500>;/* 500K, 2M, fcc */
+			vivo,usb-conn-heat-protect-data= <800 550>;
+
+			//ibat scale base on temperature
+			vivo,normal-tc-row-col = <7 7>;
+			vivo,normal-tc-data =
+						<550 8888 0 0 0 0 0>,
+						<450 549 50 0 0 0 0>,
+						<150 449 122 0 0 0 0>,
+						<100 149 100 4200000 70 0 0>,
+						<50 99 70 4200000 50 0 0>,
+						<0 49 50 0 0 0 0>,
+						<(-8888) (-1) 0 0 0 0 0>;
+
+			//adjust fastchg base on board temperature and fb off
+			vivo,intell-charge-enable;
+			vivo,parallel-temp-enable = <1 1>;//<x y> x:fb-on y:fb-off
+			//fb-on param
+			vivo,primary-fbon-tc-row-col = <6 3>;
+			vivo,primary-fbon-tc-data = <490 8888 500>,
+						    <470 489 800>,
+						    <440 469 1100>,
+						    <410 439 1300>,
+						    <370 409 1500>,
+						    <(-8888) 369 1600>;
+			vivo,parallel-fbon-tc-row-col = <5 3>;
+			vivo,parallel-fbon-tc-data = <420 8888 600>,
+						     <410 419 900>,
+						     <390 409 1140>,
+						     <370 389 1320>,
+						     <(-8888) 369 1560>;
+			//fb-off param
+			vivo,primary-fboff-tc-row-col = <7 3>;
+			vivo,primary-fboff-tc-data = <430 8888 600>,
+						     <392 429 1250>,
+						     <383 391 1350>,
+						     <370 382 1500>,
+						     <360 369 1650>,
+						     <330 359 1750>,
+						     <(-8888) 329 1850>;
+			vivo,parallel-fboff-tc-row-col = <6 3>;
+			vivo,parallel-fboff-tc-data = <430 8888 600>,
+						      <400 429 1300>,
+						      <390 399 1400>,
+						      <380 389 1500>,
+						      <360 379 1700>,
+						      <(-8888) 359 1800>;
+		};
+
+	};
+
+	fuelsummary {
+		compatible = "vivo,fuelsummary";
+
+		/************************************************************
+		 *
+		 *  0	vivo-fastchg
+		 *  1	qcom-dualchg
+		 *  2	mtk-dualchg
+		 *  3	qcom-normchg
+		 *  4	mtk-normchg
+		 *
+		 ***********************************************************/
+		chg-scheme = <1>;
+		fex-version = <2>;
+		fbon-ibat = <(-1500)>;
+		fboff-ibat = <(-2700)>;
+	};
+};
+
+
+

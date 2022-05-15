@@ -1,0 +1,4 @@
+config VIVO_BOARDINFO
+        bool "vivo Board information support"
+        help
+          enable vivo Board information support on qcom platform

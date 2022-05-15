@@ -1,0 +1,264 @@
+/*
+ * Copyright (c) 2019, The Linux Foundation. All rights reserved.
+ *
+ * This program is free software; you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License version 2 and
+ * only version 2 as published by the Free Software Foundation.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ */
+
+#include "trinket-audio-overlay.dtsi"
+
+&wsa_swr_gpios {
+	status = "disabled";
+};
+
+&wsa_spkr_en1 {
+	status = "disabled";
+};
+
+&wsa_macro {
+	status = "disabled";
+};
+
+&va_macro {
+	status = "disabled";
+};
+
+&clock_audio_wsa_1 {
+	status = "disabled";
+};
+
+&clock_audio_wsa_2 {
+	status = "disabled";
+};
+
+&clock_audio_va {
+	status = "disabled";
+};
+
+&fsa4480 {
+	status = "disabled";
+};
+
+&cdc_dmic01_gpios {
+	status = "disabled";
+};
+
+&cdc_dmic23_gpios {
+	status = "disabled";
+};
+
+&tx_macro {
+	status = "okay";
+};
+
+&rx_macro {
+	status = "okay";
+};
+
+&bolero {
+	qcom,num-macros = <2>;
+};
+
+&pri_i2s_sck_sleep {
+
+	config {
+		bias-pull-down;
+	};
+};
+
+&pri_i2s_ws_sleep {
+
+	config {
+		bias-pull-down;
+	};
+};
+
+&pri_i2s_data0_sleep {
+
+	config {
+		bias-pull-down;
+	};
+};
+
+&pri_i2s_data1_sleep {
+
+	config {
+		bias-pull-down;
+	};
+};
+
+&tx_swr_clk_active {
+
+	config {
+		drive-strength = <10>;
+	};
+};
+
+&tx_swr_data1_active {
+
+	config {
+		drive-strength = <10>;
+	};
+};
+
+&tx_swr_data2_active {
+
+	config {
+		drive-strength = <10>;
+	};
+};
+
+&rx_swr_clk_active {
+
+	config {
+		drive-strength = <10>;
+	};
+};
+
+&rx_swr_data_active {
+
+	config {
+		drive-strength = <10>;
+	};
+};
+
+&qupv3_se3_i2c {
+	status = "okay";
+
+	spkrB_TI: spkrB@4c {
+		status = "ok";
+		compatible = "ti,tas2562";
+		reg = <0x4c>;
+		ti,left-channel = <0x4c>;
+		//ti,right-channel = <0x4d>;
+		ti,channels = <1>; /* channel number */
+		ti,asi-format = <0>; /* 0, i2S; 1, DSP;  */
+		ti,reset-gpio = <&tlmm 117 0>;
+		//ti,reset-gpio2 = <&tlmm 1 0>;
+		ti,irq-gpio = <&tlmm 47 0>;
+		//ti,irq-gpio2 = <&tlmm 3 0>;
+		ti,left-slot = <0>; /* <left slot number> */
+		//ti,right-slot = <4>; /* <right slot number> */
+		pinctrl-names = "default";
+		pinctrl-0 = <&smartpa_gpio_default>;
+		vivo,impedance-min = <3145728>; /*speaker min impedance 6.0ohm*/
+		vivo,impedance-max = <5242880>; /*speaker max impedance 10.0ohm*/
+		vivo,frequency-min = <650>;
+		vivo,frequency-max = <950>;
+		vivo,Qt-min = <120>;
+	};
+};
+
+&wcd937x_codec {
+	qcom,cdc-micbias1-mv = <2200>;
+	qcom,cdc-micbias2-mv = <2800>;
+	qcom,cdc-micbias3-mv = <2200>;
+};
+
+&headset_gpio_irq_default {
+	mux {
+		pins = "gpio97";
+	};
+
+	config {
+		pins = "gpio97";
+	};
+};
+
+&soc {
+	vivo-codec-common {
+		compatible = "vivo,vivo-codec-common";
+	};
+
+	cdc_pri_mi2s_gpios: msm_cdc_pinctrl_pri {
+		status = "okay";
+		compatible = "qcom,msm-cdc-pinctrl";
+		pinctrl-names = "aud_active", "aud_sleep";
+		pinctrl-0 = <&pri_i2s_sck_active &pri_i2s_ws_active
+			     &pri_i2s_data0_active &pri_i2s_data1_active>;
+		pinctrl-1 = <&pri_i2s_sck_sleep &pri_i2s_ws_sleep
+			     &pri_i2s_data0_sleep &pri_i2s_data1_sleep>;
+	};
+
+	cdc_sec_mi2s_gpios: msm_cdc_pinctrl_sec {
+		status = "disabled";
+		compatible = "qcom,msm-cdc-pinctrl";
+		pinctrl-names = "aud_active", "aud_sleep";
+		pinctrl-0 = <&sec_i2s_sck_active &sec_i2s_ws_active
+			     &sec_i2s_data0_active &sec_i2s_data1_active>;
+		pinctrl-1 = <&sec_i2s_sck_sleep &sec_i2s_ws_sleep
+			     &sec_i2s_data0_sleep &sec_i2s_data1_sleep>;
+	};
+};
+
+&sm6150_snd {
+	status = "okay";
+	qcom,model = "trinket-idp-snd-card";
+	/delete-property/ qcom,msm-mi2s-master;
+	qcom,ext-disp-audio-rx = <0>;
+
+	qcom,msm-dynamic-dai-links =
+		"qcom,mi2s-pri-tas2562-spk-rx",
+		"qcom,mi2s-pri-tas2562-spk-tx";
+
+	qcom,audio-routing =
+		"AMIC1", "MIC BIAS1",
+		"MIC BIAS1", "Analog Mic1",
+		"AMIC2", "MIC BIAS2",
+		"MIC BIAS2", "Analog Mic2",
+		"AMIC3", "MIC BIAS3",
+		"MIC BIAS3", "Analog Mic3",
+		"IN1_HPHL", "HPHL_OUT",
+		"IN2_HPHR", "HPHR_OUT",
+		"IN3_AUX", "AUX_OUT",
+		"TX SWR_ADC0", "ADC1_OUTPUT",
+		"TX SWR_ADC2", "ADC2_OUTPUT";
+
+	qcom,msm-mbhc-hphl-swh = <1>;
+	qcom,msm-mbhc-gnd-swh = <0>;
+	qcom,msm-mbhc-hs-mic-max-threshold-mv = <2722>;  /* 110KR */
+	qcom,msm-mbhc-hs-mic-min-threshold-mv = <137>;   /* 125R  */
+	qcom,msm-mbhc-hpsw-mic-max-threshold-mv = <739>; /* 810R  */
+	vivo,mbhc-imped-adjust-ref = <10>;
+	vivo,mbhc-btn-defs = <63 113 225 463 463 463 463 463>;
+	qcom,msm-mbhc-moist-cfg = <1>, <3>, <1>;/* third parameter 1 means 24KR for qcom moisture */
+	qcom,hs-pull-up-i-mv = <8>;/* 8 means pull up current source 2uA */
+	qcom,mic-clamp_ctl = <2>;/* 2 means auto-clamp feature */
+	qcom,mbhc-detect-moisture;/* existing this attribute means to open qcom mositure feature */
+
+	qcom,headset-irq-gpio = <&tlmm 97 0>;
+	pinctrl-names = "headset_gpio_irq";
+	pinctrl-0 =  <&headset_gpio_irq_default>;
+
+	/delete-property/ qcom,cdc-dmic01-gpios;
+	/delete-property/ qcom,cdc-dmic23-gpios;
+	qcom,pri-mi2s-gpios = <&cdc_pri_mi2s_gpios>;
+	/* qcom,sec-mi2s-gpios = <&cdc_sec_mi2s_gpios>; */
+
+	asoc-codec  = <&stub_codec>, <&bolero>;
+	asoc-codec-names = "msm-stub-codec.1", "bolero_codec";
+	qcom,wsa-max-devs = <0>;
+	/delete-property/ qcom,wsa-devs;
+	/delete-property/ qcom,wsa-aux-dev-prefix;
+	qcom,codec-max-aux-devs = <1>;
+	qcom,codec-aux-devs = <&wcd937x_codec>;
+	qcom,msm_audio_ssr_devs = <&audio_apr>, <&q6core>,
+				<&bolero>;
+
+	/* sound-card infomation */
+	vivo,builtin-mic-num = <2>;
+	vivo,spa-driver-type = <1>;
+	vivo,spa-num = <1>;/* 1 for 1pa ,2 for 2pa, 3 for choose ti and cs */
+	vivo,spa-manufacturer = <2>;
+	vivo,fm-support;
+	vivo,fm-hostless-pcm-spk = <37>;
+	vivo,fm-hostless-pcm-hp = <35>;
+	vivo,ktv_hp_rx_port_id = <0xB030>;
+	vivo,ktv_spk_rx_port_id = <0x1000>;
+};

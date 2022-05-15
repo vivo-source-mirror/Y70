@@ -1,0 +1,29 @@
+/*otg relative config for adc method*/
+
+&pm6125_gpios {
+	gpio3_adc{
+		gpio3_adc_default:gpio3_adc_default{
+			pins = "gpio3";
+			function = "normal";
+			bias-high-impedance;
+		};
+	};
+};
+    
+&pm6125_vadc  {
+	usbid_adc  {
+		reg = <ADC_GPIO1>;
+		label = "usdid";
+		qcom,pre-scaling=<1 1>;
+	};
+};
+
+&usb0 {
+    qcom,usbidvol-gpio = <&tlmm 59 0>;
+	pinctrl-names = "default";
+	pinctrl-0 = <&gpio3_adc_default>;
+	io-channels = <&pm6125_vadc  ADC_GPIO1>;
+	io-channel-names = "usbid_pin";
+	qcom,usbid_adc_used;
+        //extcon = <&pm6150_charger>;
+};
